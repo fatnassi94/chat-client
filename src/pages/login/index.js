@@ -1,11 +1,25 @@
 import React from "react";
 import {Link}   from "react-router-dom";
+import {login} from "../../apiCalls/auth";
+
 export default function Login() {
   const [user, setUser] = React.useState({ email: "", password: "" });
 
-  const onFormSubmit = (e) => {
+  const onFormSubmit = async (e) => {
     e.preventDefault();
-    console.log(user);
+    try {
+     const response = await login(user);
+     if (response.success) {
+        alert("Login successful! Redirecting to chat...");
+        localStorage.setItem("token", response.token)
+     }
+     else {
+        alert(response.message || "Login failed. Please try again.");
+     }
+    }
+    catch(err) {
+        alert(err.message || "An error occurred. Please try again.");
+    }
   };
   return (
     <div className="container">

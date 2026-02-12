@@ -1,5 +1,7 @@
 import React from "react";
 import {Link} from "react-router-dom";
+import {signup} from "../../apiCalls/auth";
+
 export default function Signup() {
   const [user, setUser] = React.useState({
     firstName: "",
@@ -8,9 +10,22 @@ export default function Signup() {
     password: "",
   });
 
-const onFormSubmit = (e) => {
+const onFormSubmit = async (e) => {
   e.preventDefault();
-  console.log(user);
+  try {
+const response = await signup(user);
+if (response.success) {
+alert("Signup successful! Please login.");
+setUser({ firstName: "", lastName: "", email: "", password: "" });
+
+  }
+else {
+alert(response.message || "Signup failed. Please try again.");
+}
+}
+  catch(err){
+alert(err.message || "An error occurred. Please try again.");
+  }
 }
   return (
     <div className="container">
