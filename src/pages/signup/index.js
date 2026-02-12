@@ -1,6 +1,7 @@
 import React from "react";
 import {Link} from "react-router-dom";
 import {signup} from "../../apiCalls/auth";
+import {Toaster} from "react-hot-toast";
 
 export default function Signup() {
   const [user, setUser] = React.useState({
@@ -15,16 +16,16 @@ const onFormSubmit = async (e) => {
   try {
 const response = await signup(user);
 if (response.success) {
-alert("Signup successful! Please login.");
+Toaster.success("Signup successful! Please login.");
 setUser({ firstName: "", lastName: "", email: "", password: "" });
 
   }
 else {
-alert(response.message || "Signup failed. Please try again.");
+Toaster.error(response.message || "Signup failed. Please try again.");
 }
 }
   catch(err){
-alert(err.message || "An error occurred. Please try again.");
+Toaster.error(err.message || "An error occurred. Please try again.");
   }
 }
   return (

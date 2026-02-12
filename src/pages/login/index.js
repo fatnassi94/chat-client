@@ -1,7 +1,7 @@
 import React from "react";
 import {Link}   from "react-router-dom";
 import {login} from "../../apiCalls/auth";
-
+import {toast} from "react-hot-toast";
 export default function Login() {
   const [user, setUser] = React.useState({ email: "", password: "" });
 
@@ -10,15 +10,16 @@ export default function Login() {
     try {
      const response = await login(user);
      if (response.success) {
-        alert("Login successful! Redirecting to chat...");
+        toast.success("Login successful! Redirecting to chat...");
         localStorage.setItem("token", response.token)
+        window.location.href = "/";
      }
      else {
-        alert(response.message || "Login failed. Please try again.");
+        toast.error(response.message || "Login failed. Please try again.");
      }
     }
     catch(err) {
-        alert(err.message || "An error occurred. Please try again.");
+        toast.error(err.message || "An error occurred. Please try again.");
     }
   };
   return (
