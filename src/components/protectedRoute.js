@@ -1,51 +1,63 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getLoggedUser } from "../apiCalls/users";
+import { useDispatch, useSelector } from "react-redux";
+import { showLoader, hideLoader } from "../redux/loaderSlice";
+import {setUser} from "../redux/userSlice";
 
 function ProtectedRoute({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const{ user } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const [checked, setChecked] = useState(false);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const logUser = async () => {
       try {
+        dispatch(showLoader());
+
         const response = await getLoggedUser();
 
         if (response.success) {
-          setUser(response.user);
+          dispatch(setUser(response.user));
         } else {
           localStorage.removeItem("token");
         }
       } catch (error) {
         localStorage.removeItem("token");
       } finally {
-        setLoading(false);
+        dispatch(hideLoader());
+        setChecked(true);
       }
     };
 
     if (token) {
       logUser();
     } else {
-      setLoading(false);
+      setChecked(true);
     }
-  }, [token]);
+  }, [token, dispatch]);
 
+  // No token → redirect
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  if (loading) {
-    return <div>Loading...</div>;
+  // Still verifying → render nothing (global loader visible)
+  if (!checked) {
+    return null;
   }
 
+  // Token invalid after verification
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  return <div>
-    <p>Welcome, {user?.firstName || "Guest"}!</p>
-    {children}</div>;
+  return (
+    <>
+      {children}
+    </>
+  );
 }
 
 export default ProtectedRoute;
