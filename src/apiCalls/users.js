@@ -11,3 +11,14 @@ export const getLoggedUser = async () => {
      return err.response;
     }
 }
+
+export const getAllUsers = async () => {
+    try {
+  const allUsers = await axiosInstance.get("api/user/get-all-users");
+    return allUsers.data;
+    }
+
+    catch(err) {
+     return err.response;
+    }
+}

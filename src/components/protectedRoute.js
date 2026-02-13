@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { getLoggedUser } from "../apiCalls/users";
+import { getLoggedUser, getAllUsers } from "../apiCalls/users";
 import { useDispatch, useSelector } from "react-redux";
 import { showLoader, hideLoader } from "../redux/loaderSlice";
-import {setUser} from "../redux/userSlice";
+import {setUser, setAllUsers} from "../redux/userSlice";
 
 function ProtectedRoute({ children }) {
     const{ user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+
   const [checked, setChecked] = useState(false);
   const token = localStorage.getItem("token");
 
@@ -19,7 +20,10 @@ function ProtectedRoute({ children }) {
         const response = await getLoggedUser();
 
         if (response.success) {
+            
           dispatch(setUser(response.user));
+          const getAllUsersResponse = await getAllUsers();
+            dispatch(setAllUsers(getAllUsersResponse.users));
         } else {
           localStorage.removeItem("token");
         }
