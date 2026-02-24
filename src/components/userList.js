@@ -1,13 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-hot-toast";
+import { createChat } from "../apiCalls/chat";
+import { showLoader, hideLoader } from "../redux/loaderSlice";
+import { setAllChats, setSelectedChat } from "../redux/userSlice";
+import { getAllChats } from "../apiCalls/chat";
+
 export default function UserList({ searchTerm }) {
   const [users, setUsers] = useState([]);
+  const dispatch = useDispatch();
   const allUsers = useSelector((state) => state.user.allUsers);
+  const user = useSelector((state) => state.user.user);
+  const allChats = useSelector((state) => state.user.allChats);
   useEffect(() => {
+
     setUsers(allUsers);
   }, [allUsers]);
+
+  const createNewChat = async (userId) => {
+    console.log(allChats, 'cccc');
+    
+    try {
+      dispatch(showLoader());
+
+      const response = await createChat({
+        members: [user._id, userId],
+      });
+
+      if (response.success) {
+        toast.success("Chat created successfully!");
+        const newChat = response.chat;
+
+        const chatsResponse = await getAllChats();
+      
+        if (chatsResponse.success) {
+          dispatch(setAllChats(chatsResponse.chats));
+          dispatch(setSelectedChat(newChat));
+        }
+      } else {
+        toast.error(response.message);
+      }
+
+      dispatch(hideLoader());
+    } catch (error) {
+      dispatch(hideLoader());
+      toast.error("Something went wrong");
+    }
+  };
+  const openChat = (userId) => {
+    const chat = allChats.find(chat => chat.members.includes(userId) && chat.members.includes(user._id));
+    if (chat) {
+      dispatch(setSelectedChat(chat));
+    }
+  }
+  const findInChat = userId => {
+    return allChats.find(chat => chat.members.includes(userId));
+  }
   return (
-    <div class="user-search-filter">
+    <div class="user-search-filter" >
       <div class="filtered-user">
         {users
           .filter((user) => {
@@ -15,7 +65,7 @@ export default function UserList({ searchTerm }) {
             return fullName.includes(searchTerm.toLowerCase());
           })
           .map((user) => (
-            <div class="filter-user-display" key={user._id}>
+            <div class="filter-user-display" key={user._id} onClick={() => openChat(user._id)}>
               {user.profilePic ? (
                 <img
                   src={user.profilePic}
@@ -35,7 +85,12 @@ export default function UserList({ searchTerm }) {
                 <div class="user-display-email">{user.email}</div>
               </div>
               <div class="user-start-chat">
-                <button class="user-start-chat-btn">Start Chat</button>
+               { !findInChat(user._id) && <button
+                  class="user-start-chat-btn"
+                  onClick={() => createNewChat(user._id)}
+                >
+                  Start Chat
+                </button>}
               </div>
             </div>
           ))}

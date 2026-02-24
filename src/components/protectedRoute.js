@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getLoggedUser, getAllUsers } from "../apiCalls/users";
+import { getAllChats } from "../apiCalls/chat";
 import { useDispatch, useSelector } from "react-redux";
 import { showLoader, hideLoader } from "../redux/loaderSlice";
-import {setUser, setAllUsers} from "../redux/userSlice";
+import {setUser, setAllUsers, setAllChats} from "../redux/userSlice";
 
 function ProtectedRoute({ children }) {
     const{ user } = useSelector((state) => state.user);
@@ -24,6 +25,8 @@ function ProtectedRoute({ children }) {
           dispatch(setUser(response.user));
           const getAllUsersResponse = await getAllUsers();
             dispatch(setAllUsers(getAllUsersResponse.users));
+              const getAllChatsResponse = await getAllChats();
+              dispatch(setAllChats(getAllChatsResponse.chats));
         } else {
           localStorage.removeItem("token");
         }
