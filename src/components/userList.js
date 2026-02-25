@@ -12,13 +12,14 @@ export default function UserList({ searchTerm }) {
   const allUsers = useSelector((state) => state.user.allUsers);
   const user = useSelector((state) => state.user.user);
   const allChats = useSelector((state) => state.user.allChats);
+    const {selectedChat} = useSelector(state => state.user);
+  
   useEffect(() => {
 
     setUsers(allUsers);
   }, [allUsers]);
 
   const createNewChat = async (userId) => {
-    console.log(allChats, 'cccc');
     
     try {
       dispatch(showLoader());
@@ -48,13 +49,20 @@ export default function UserList({ searchTerm }) {
     }
   };
   const openChat = (userId) => {
-    const chat = allChats.find(chat => chat.members.includes(userId) && chat.members.includes(user._id));
+    const chat = allChats.find(chat => chat.members.map(el => el._id).includes(userId) && chat.members.map(el => el._id).includes(user._id));
     if (chat) {
       dispatch(setSelectedChat(chat));
     }
   }
   const findInChat = userId => {
-    return allChats.find(chat => chat.members.includes(userId));
+    return allChats.find(chat => chat.members.map(el => el._id).includes(userId));
+  }
+
+  const isSelectedChat = user => {
+    if (selectedChat) {
+      return selectedChat.members.map(el => el._id).includes(user._id);
+    }
+    return false
   }
   return (
     <div class="user-search-filter" >
@@ -65,7 +73,7 @@ export default function UserList({ searchTerm }) {
             return fullName.includes(searchTerm.toLowerCase());
           })
           .map((user) => (
-            <div class="filter-user-display" key={user._id} onClick={() => openChat(user._id)}>
+            <div class={isSelectedChat(user) ? "filter-user-display selected-user" : "filter-user-display"} key={user._id} onClick={() => openChat(user._id)}>
               {user.profilePic ? (
                 <img
                   src={user.profilePic}
