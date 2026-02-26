@@ -5,19 +5,20 @@ import {
   createNewMessage,
   getAllMessages as getAllMessagesAPI,
 } from "../../../apiCalls/messages";
+import { clearUnreadMessages } from "../../../apiCalls/chat";
 import { showLoader, hideLoader } from "../../../redux/loaderSlice";
 
 export default function Chat() {
   const dispatch = useDispatch();
 
-  const { selectedChat, user } = useSelector((state) => state.user);
+  const { selectedChat, user, allChats } = useSelector((state) => state.user);
 
   const [message, setMessage] = React.useState("");
   const [allMessages, setAllMessages] = React.useState([]);
 
   // Get the other user in the chat
   const selectedUser = selectedChat?.members?.find(
-    (member) => member._id !== user?._id
+    (member) => member._id !== user?._id,
   );
 
   // ✅ Send Message
@@ -44,7 +45,7 @@ export default function Chat() {
         fetchAllMessages();
       } else {
         toast.error(
-          response.message || "Failed to send message. Please try again."
+          response.message || "Failed to send message. Please try again.",
         );
       }
     } catch (error) {
@@ -67,12 +68,42 @@ export default function Chat() {
         setAllMessages(response.messages || []);
       } else {
         toast.error(
-          response.message || "Failed to fetch messages. Please try again."
+          response.message || "Failed to fetch messages. Please try again.",
         );
       }
     } catch (error) {
       toast.error(
-        error.message || "An error occurred while fetching messages."
+        error.message || "An error occurred while fetching messages.",
+      );
+    } finally {
+      dispatch(hideLoader());
+    }
+  };
+
+  // ✅ clear UnreadMessages
+  const clearAllUnread = async () => {
+    if (!selectedChat?._id) return;
+
+    try {
+      dispatch(showLoader());
+
+      const response = await clearUnreadMessages(selectedChat._id);
+
+      if (response.success) {
+        allChats.map((chat) => {
+          if (chat._id === selectedChat._id) {
+            return response.data;
+          }
+          return chat;
+        });
+      } else {
+        toast.error(
+          response.message || "Failed to fetch messages. Please try again.",
+        );
+      }
+    } catch (error) {
+      toast.error(
+        error.message || "An error occurred while fetching messages.",
       );
     } finally {
       dispatch(hideLoader());
@@ -83,6 +114,7 @@ export default function Chat() {
   React.useEffect(() => {
     if (selectedChat?._id) {
       fetchAllMessages();
+        clearAllUnread();
     } else {
       setAllMessages([]);
     }
@@ -111,7 +143,6 @@ export default function Chat() {
             >
               <p>{msg.text}</p>
               <span>{new Date(msg.updatedAt).toLocaleTimeString()}</span>
-
             </div>
           ))
         )}

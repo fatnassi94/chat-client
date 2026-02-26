@@ -68,7 +68,7 @@ export default function UserList({ searchTerm }) {
   const getLastMessage = user => {
     const chat = allChats.find(chat => chat.members.map(el => el._id).includes(user._id) && chat.members.map(el => el._id).includes(user._id));
     if (!chat) return "";
-    return chat?.lastMessage[0]?.text
+    return chat?.lastMessage[0]?.text?.length > 30 ? chat?.lastMessage[0]?.text.substring(0, 30) + "..." : chat?.lastMessage[0]?.text;
   }
   return (
     <div class="user-search-filter" >

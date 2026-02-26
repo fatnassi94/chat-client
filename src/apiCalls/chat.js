@@ -21,3 +21,13 @@ export const createChat = async (chatData) => {
      return err.response;
     }
 }
+
+export const clearUnreadMessages = async (chatId) => {
+  try {
+    const response = await axiosInstance.post("api/chat/clear-unread-messages", {chatId});
+    return response.data;
+  }
+  catch(err) {
+    return err.response;
+  }
+}
